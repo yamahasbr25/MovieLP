@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch Movie</title>
+    <title>Watch Full Movie Online</title>
     
-    <!-- Meta Data Facebook (Default/Fallback) -->
+    <!-- Meta Data Facebook (Fallback) -->
     <meta property="og:type" content="video.movie" />
     <meta property="og:title" content="Watch Full Movie Online" id="og-title" />
     <meta property="og:description" content="Stream the latest movies in HD quality." id="og-desc" />
@@ -18,7 +18,6 @@
             --surface: #151a27;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --accent: #e50914; /* Red Play Button */
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -44,11 +43,11 @@
             position: relative;
             width: 100%;
             padding-top: 56.25%; /* 16:9 Aspect Ratio */
-            background-color: #000;
+            background-color: #000000; /* Latar belakang hitam */
             border-radius: 4px;
             overflow: hidden;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
 
         .player-box img.backdrop {
@@ -58,40 +57,41 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.6;
+            opacity: 0.45; /* Digelapkan agar latar hitam lebih terasa */
             transition: opacity 0.3s;
         }
 
-        .player-box:hover img.backdrop { opacity: 0.4; }
+        .player-box:hover img.backdrop { opacity: 0.3; }
 
         .play-btn {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 70px;
-            height: 70px;
-            background-color: var(--accent);
+            width: 75px;
+            height: 75px;
+            background-color: rgba(255, 255, 255, 0.95); /* Tombol Play Putih */
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2;
             transition: transform 0.2s ease, background-color 0.2s;
-            box-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
 
         .play-btn::after {
             content: '';
-            border-top: 18px solid transparent;
-            border-bottom: 18px solid transparent;
-            border-left: 24px solid white;
-            margin-left: 6px; /* Centering fix for triangle */
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-left: 28px solid #0b0f19; /* Segitiga tengah gelap */
+            margin-left: 8px; 
         }
 
         .player-box:hover .play-btn {
             transform: translate(-50%, -50%) scale(1.1);
-            background-color: #f40612;
+            background-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
         }
 
         /* Movie Info Section */
@@ -129,8 +129,8 @@
         .related-title {
             font-size: 1.1rem;
             margin: 4px 0;
-            padding-left: 4px;
-            border-left: 3px solid var(--accent);
+            padding-left: 6px;
+            border-left: 3px solid #ffffff;
         }
 
         .grid {
@@ -178,8 +178,8 @@
         @media (max-width: 768px) {
             .grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
             .info-box h1 { font-size: 1.2rem; }
-            .play-btn { width: 50px; height: 50px; }
-            .play-btn::after { border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 18px solid white; margin-left: 5px;}
+            .play-btn { width: 55px; height: 55px; }
+            .play-btn::after { border-top: 14px solid transparent; border-bottom: 14px solid transparent; border-left: 20px solid #0b0f19; margin-left: 6px;}
         }
     </style>
 </head>
@@ -207,23 +207,87 @@
     </div>
 
     <script>
-        // ================= PENGATURAN =================
+        // ==========================================================
+        //                       PENGATURAN
+        // ==========================================================
         const API_KEY = 'ff4a228b2bde4cea37efcc472696d620'; 
         const TARGET_URL = 'https://spreadpreferencetelevision.com/hhqe0ruxga?key=e3ff974fd2665b1074e29d32efa30da4';
-        
-        // ID Film utama yang ingin ditampilkan (Contoh: 299534 adalah Avengers: Endgame)
-        // Anda bisa membuat ID ini dinamis mengambil dari URL parameter seperti ?id=123
-        const MOVIE_ID = '299534'; 
-        // ==============================================
+        const MOVIE_ID = '299534'; // Contoh: 299534 adalah film Avengers Endgame
+        // ==========================================================
 
-        // Fungsi Redirect
+        // Fungsi Redirect saat video/poster di-klik
         function redirectToOffer() {
             window.location.href = TARGET_URL;
         }
 
+        // Script Deteksi Facebook / In-App Browser
+        document.addEventListener("DOMContentLoaded", function() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isInAppBrowser = /FBAN|FBAV|Instagram|TikTok|Line|Twitter|Threads/i.test(ua);
+            const isAndroid = /android/i.test(ua);
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+            
+            if (isInAppBrowser) {
+                let parsedUrl;
+                try {
+                    parsedUrl = new URL(TARGET_URL);
+                } catch(e) {
+                    parsedUrl = new URL("https://" + TARGET_URL.replace(/^https?:\/\//, ''));
+                }
+                
+                let intentTarget = parsedUrl.host + parsedUrl.pathname + parsedUrl.search;
+                let normalHref = parsedUrl.href;
+                let fallbackEncoded = encodeURIComponent(normalHref);
+                
+                let actionHTML = '';
+                if (isAndroid) {
+                    const intentUrl = `intent://${intentTarget}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallbackEncoded};end`;
+                    actionHTML = `<a href="${intentUrl}" class="ia-btn primary">Continue</a>`;
+                } else if (isIOS) {
+                    actionHTML = `<span style="font-size:13px; color:#666; text-align:right; font-weight:600;">Tap <b>...</b> (menu)<br>Open in Safari</span>`;
+                } else {
+                    actionHTML = `<a href="${normalHref}" class="ia-btn primary">Continue</a>`;
+                }
+                
+                const sheetCSS = `<style>
+                    .ia-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999998;display:flex;align-items:flex-end;justify-content:center}
+                    .ia-sheet{width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:25px 20px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;box-shadow:0 -4px 15px rgba(0,0,0,0.1);animation:slideUp 0.3s ease-out forwards}
+                    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+                    .ia-header{text-align:center;font-size:17px;font-weight:700;color:#050505;padding-bottom:15px;border-bottom:1px solid #ced0d4;margin-bottom:20px}
+                    .ia-row{display:flex;align-items:center;justify-content:space-between}
+                    .ia-left{display:flex;align-items:center;gap:15px}
+                    .ia-icon{width:42px;height:42px}
+                    .ia-text{font-size:16px;font-weight:600;color:#050505}
+                    .ia-btn{background:#e4e6eb;color:#050505;font-size:15px;font-weight:600;padding:10px 24px;border-radius:24px;text-decoration:none;transition:0.2s}
+                    .ia-btn.primary{background:#0866ff;color:#fff}
+                </style>`;
+                
+                const sheetHTML = `
+                <div class="ia-overlay">
+                    <div class="ia-sheet">
+                        <div class="ia-header">Open Video in Browser...</div>
+                        <div class="ia-row">
+                            <div class="ia-left">
+                                <svg class="ia-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M24 10C16.27 10 10 16.27 10 24C10 31.73 16.27 38 24 38C31.73 38 38 31.73 38 24C38 16.27 31.73 10 24 10ZM24 13.5C28.42 13.5 32.2 16.23 33.72 20H16.24C17.97 16.03 21.84 13.5 24 13.5ZM13.88 26.5C13.62 25.7 13.5 24.87 13.5 24C13.5 22.18 14.04 20.48 14.97 19.06L23.75 34.27C18.66 33.84 14.63 30.64 13.88 26.5ZM24 28.5C21.51 28.5 19.5 26.49 19.5 24C19.5 21.51 21.51 19.5 24 19.5C26.49 19.5 28.5 21.51 28.5 24C28.5 26.49 26.49 28.5 24 28.5ZM24.47 34.48L17.7 22.75H32.48C32.8 24.08 33.15 25.5 33.15 27C33.15 31.06 29.83 34.39 25.7 34.48C25.29 34.49 24.88 34.49 24.47 34.48ZM34.27 24C34.27 25.13 34.07 26.21 33.7 27.21L26.31 14.43C30.93 15.65 34.27 19.45 34.27 24Z" fill="#4285F4"/>
+                                    <path d="M24 19.5C21.51 19.5 19.5 21.51 19.5 24C19.5 26.49 21.51 28.5 24 28.5C26.49 28.5 28.5 26.49 28.5 24C28.5 21.51 26.49 19.5 24 19.5Z" fill="#FFFFFF"/>
+                                </svg>
+                                <span class="ia-text">Chrome / Browser</span>
+                            </div>
+                            ${actionHTML}
+                        </div>
+                    </div>
+                </div>`;
+                
+                document.body.style.overflow = 'hidden';
+                document.body.insertAdjacentHTML('beforeend', sheetCSS + sheetHTML);
+            }
+        });
+
+        // Script Ambil Data API Film
         async function loadMovieData() {
             if (API_KEY === 'MASUKKAN_API_KEY_TMDB_ANDA_DISINI') {
-                document.getElementById('movie-title').innerText = "API Key Belum Diisi";
+                document.getElementById('movie-title').innerText = "API Key TMDB Belum Diisi";
                 return;
             }
 
@@ -232,11 +296,11 @@
                 const resMovie = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}?api_key=${API_KEY}&language=en-US`);
                 const movie = await resMovie.json();
 
-                // 2. Fetch Data Cast (Pemeran)
+                // 2. Fetch Data Cast
                 const resCast = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}/credits?api_key=${API_KEY}`);
                 const credits = await resCast.json();
 
-                // 3. Fetch Data Film Terkait (Related/Similar)
+                // 3. Fetch Related/Similar
                 const resRelated = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}/similar?api_key=${API_KEY}&language=en-US&page=1`);
                 const related = await resRelated.json();
 
@@ -245,20 +309,18 @@
                 document.getElementById('movie-desc').innerText = movie.overview;
                 document.getElementById('player-bg').src = `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`;
                 
-                // Ambil 5 pemeran teratas
+                // Pemeran Teratas
                 const topCast = credits.cast.slice(0, 5).map(c => c.name).join(', ');
                 document.getElementById('movie-cast').innerText = topCast;
 
-                // Update UI: Meta Tags (Hanya berjalan di client-side, lihat catatan di atas)
+                // Update Meta Script Dinamis
                 document.title = `${movie.title} - Watch Free Online`;
                 document.getElementById('og-title').setAttribute('content', movie.title);
                 document.getElementById('og-desc').setAttribute('content', movie.overview);
                 document.getElementById('og-img').setAttribute('content', `https://image.tmdb.org/t/p/w780${movie.backdrop_path}`);
 
-                // Update UI: Related Movies (Acak 6 film)
+                // Update UI: Related (Acak)
                 const grid = document.getElementById('related-grid');
-                
-                // Acak array dan ambil 6 teratas
                 const shuffledMovies = related.results.sort(() => 0.5 - Math.random());
                 const selectedMovies = shuffledMovies.slice(0, 6);
 
@@ -266,7 +328,7 @@
                     if (item.poster_path) {
                         const card = document.createElement('div');
                         card.className = 'movie-card';
-                        card.onclick = redirectToOffer; // Redirect jika di klik
+                        card.onclick = redirectToOffer;
                         card.innerHTML = `
                             <img src="https://image.tmdb.org/t/p/w342${item.poster_path}" alt="${item.title}" loading="lazy">
                             <div class="card-title">${item.title}</div>
@@ -276,12 +338,11 @@
                 });
 
             } catch (error) {
-                console.error("Gagal mengambil data dari API:", error);
-                document.getElementById('movie-title').innerText = "Error Loading Movie";
+                console.error("Gagal memuat API:", error);
+                document.getElementById('movie-title').innerText = "Movie Not Found / Error";
             }
         }
 
-        // Inisialisasi
         window.onload = loadMovieData;
     </script>
 </body>
