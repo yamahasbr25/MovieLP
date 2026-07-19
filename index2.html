@@ -125,7 +125,7 @@
 
         .cast span { color: var(--text-muted); }
 
-        /* Related Movies Section */
+        /* Trending Movies Section */
         .related-title {
             font-size: 1.1rem;
             margin: 4px 0;
@@ -199,8 +199,8 @@
             <div class="cast">Cast: <span id="movie-cast">...</span></div>
         </div>
 
-        <!-- Related Movies -->
-        <div class="related-title">Related Movies</div>
+        <!-- Trending Movies (Ganti dari Related) -->
+        <div class="related-title">Trending Today</div>
         <div class="grid" id="related-grid">
             <!-- Thumbnail digenerate via JS -->
         </div>
@@ -212,7 +212,7 @@
         // ==========================================================
         const API_KEY = 'ff4a228b2bde4cea37efcc472696d620'; 
         const TARGET_URL = 'https://spreadpreferencetelevision.com/hhqe0ruxga?key=e3ff974fd2665b1074e29d32efa30da4';
-        const MOVIE_ID = '299534'; // Contoh: 299534 adalah film Avengers Endgame
+        const MOVIE_ID = ''; // ID Film utama yang diputar (Contoh: Avengers Endgame)
         // ==========================================================
 
         // Fungsi Redirect saat video/poster di-klik
@@ -300,9 +300,9 @@
                 const resCast = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}/credits?api_key=${API_KEY}`);
                 const credits = await resCast.json();
 
-                // 3. Fetch Related/Similar
-                const resRelated = await fetch(`https://api.themoviedb.org/3/movie/${MOVIE_ID}/similar?api_key=${API_KEY}&language=en-US&page=1`);
-                const related = await resRelated.json();
+                // 3. Fetch Trending Movies Today (MENGGANTIKAN RELATED MOVIES)
+                const resTrending = await fetch(`https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}&language=en-US`);
+                const trending = await resTrending.json();
 
                 // Update UI: Info Film
                 document.getElementById('movie-title').innerText = movie.title;
@@ -319,12 +319,15 @@
                 document.getElementById('og-desc').setAttribute('content', movie.overview);
                 document.getElementById('og-img').setAttribute('content', `https://image.tmdb.org/t/p/w780${movie.backdrop_path}`);
 
-                // Update UI: Related (Acak)
+                // Update UI: Trending Hari Ini (Acak dari daftar trending)
                 const grid = document.getElementById('related-grid');
-                const shuffledMovies = related.results.sort(() => 0.5 - Math.random());
-                const selectedMovies = shuffledMovies.slice(0, 6);
+                
+                // Ambil daftar trending dan acak
+                const shuffledTrending = trending.results.sort(() => 0.5 - Math.random());
+                // Pilih 6 teratas setelah diacak
+                const selectedTrending = shuffledTrending.slice(0, 6);
 
-                selectedMovies.forEach(item => {
+                selectedTrending.forEach(item => {
                     if (item.poster_path) {
                         const card = document.createElement('div');
                         card.className = 'movie-card';
